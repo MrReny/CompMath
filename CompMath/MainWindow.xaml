@@ -3,10 +3,74 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         xmlns:local="clr-namespace:CompMath"
         mc:Ignorable="d"
-        Title="MainWindow" Height="350" Width="525">
-    <Grid>
+        Title="MainWindow" Height="600" Width="800" d:DataContext="{d:DesignInstance local:MainWindow}">
+    <Grid Name="RootGrid" MinHeight="60" >
+        
+        <Grid.RowDefinitions>
+            <RowDefinition Height="3*"/>
+            <RowDefinition Height="2*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        
+        <!--<Canvas Name="Graphic" Grid.Row="0" Grid.Column="0"/>-->
+        <lvc:CartesianChart Name="CartesianChart1"  Grid.Row="0" Grid.Column="0" 
+                            Series="{Binding SeriesCollection}" LegendLocation="Right" >
+            <!--<lvc:CartesianChart.AxisY>
+                <lvc:Axis Title="Y" Labels="{Binding _yMass}"></lvc:Axis>
+            </lvc:CartesianChart.AxisY>-->
+            <lvc:CartesianChart.AxisX>
+                <lvc:Axis Title="x" Labels="{Binding XFormatter}">
+                    <lvc:Axis.Separator>
+                        <lvc:Separator IsEnabled="False" Step="0.2"></lvc:Separator>
+                    </lvc:Axis.Separator>
+                </lvc:Axis>
+            </lvc:CartesianChart.AxisX>
+        </lvc:CartesianChart>
+        
+        <DataGrid Name="Table" Grid.Row="0" Grid.Column="1"
+                  DataContext="{Binding}" Loaded="Table_OnLoaded" AutoGeneratingColumn="Table_OnAutoGeneratingColumn" >
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="I" Binding="{Binding I}"></DataGridTextColumn>
+                <DataGridTextColumn Header="X" Binding="{Binding X}"></DataGridTextColumn>
+                <DataGridTextColumn Header="Y" Binding="{Binding Y}"></DataGridTextColumn>
+            </DataGrid.Columns>
+        </DataGrid>
+        
+        <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Name="ButtonGrid">
+            
+            <Grid.RowDefinitions>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+                <RowDefinition Height="1*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+            </Grid.ColumnDefinitions>  
+            
+            <Button Name="ButtonEuler" Content="Euler" Click="ButtonEuler_OnClick"/>
+            <Button Name="ButtonRungeKutt" Grid.Row="1" Grid.Column="0"
+                    Content="RungeKutt" Click="ButtonRungeKutt_OnClick"/>
+            <Button Name="ButtonNewtonPolynomial" Grid.Row="2" Grid.Column="0"
+                    Content="NewtonPolynomial" Click="ButtonNewtonPolynomial_OnClick"/>
+            
+            <TextBox Name="HBox" Grid.Row="0" Grid.Column="1" PreviewTextInput="HBox_OnPreviewTextInput" Text="0.05"></TextBox>
+            <Button Name="ButtonOk" Grid.Row="0" Grid.Column="2"
+                    Content="OK" Click="ButtonOk_OnClick"/>
+            
+            <Label Name="QuadFunc" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="y = " />
+            <Button Name="Quads" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
+                    Content="OK" Click="Quads_OnClick"/>
+            
+        </Grid>
         
     </Grid>
 </Window>
