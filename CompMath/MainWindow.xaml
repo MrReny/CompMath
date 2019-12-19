@@ -6,7 +6,7 @@
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         xmlns:local="clr-namespace:CompMath"
         mc:Ignorable="d"
-        Title="MainWindow" Height="600" Width="800" d:DataContext="{d:DesignInstance local:MainWindow}">
+        Title="MainWindow" Height="600" Width="1200" d:DataContext="{d:DesignInstance local:MainWindow}">
     <Grid Name="RootGrid" MinHeight="60" >
         
         <Grid.RowDefinitions>
@@ -61,14 +61,17 @@
                     Content="RungeKutt" Click="ButtonRungeKutt_OnClick"/>
             <Button Name="ButtonNewtonPolynomial" Grid.Row="2" Grid.Column="0"
                     Content="NewtonPolynomial" Click="ButtonNewtonPolynomial_OnClick"/>
+            <Label Name="PxFunc" Grid.Row="3" Grid.Column="0" Content="P(x) = f(x) " />
             
             <TextBox Name="HBox" Grid.Row="0" Grid.Column="1" PreviewTextInput="HBox_OnPreviewTextInput" Text="0.05"></TextBox>
             <Button Name="ButtonOk" Grid.Row="0" Grid.Column="2"
                     Content="OK" Click="ButtonOk_OnClick"/>
             
-            <Label Name="QuadFunc" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="y = " />
+            <Label Name="QuadFunc" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="P(x) = " />
             <Button Name="Quads" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
                     Content="OK" Click="Quads_OnClick"/>
+            <Button Name="Squares" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"
+                    Content="OK" Click="Squares_OnClick"/>
             
         </Grid>
         

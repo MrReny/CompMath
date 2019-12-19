@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Runtime.Remoting.Messaging;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -25,7 +26,7 @@ namespace CompMath
         private double _uX = 2; // upper edge
 
         private double _y0 = 15; // y(0) 
-        private int _n = 40; // number of steps
+        private int _n = 41; // number of steps
         
         private double _h = 0.05; // value of step
 
@@ -50,9 +51,11 @@ namespace CompMath
                     _h = value;
                 }
 
-                _n = (int)((_uX - _lX) / _h);
+                _n = (int)((_uX - _lX) / _h)+1;
             }
         }
+
+        public double[] _r;
 
         public List<XYtable> XYlist;
         public List<XYdYtable> XYdYlist;
@@ -60,8 +63,6 @@ namespace CompMath
         public MainWindow()
         {
             InitializeComponent();
-            //EulerMethod();
-            
         }
 
         private double _Function(double x)
@@ -222,21 +223,49 @@ namespace CompMath
                 for (i = 0; i < _n-1 ; i++)
                 {
                     dY[i][n] = Math.Abs(dy[i+1][n-1] - dy[i][n-1]);
+                    if (0.000000001 >= dY[i+1][n - 1] && dY[i+1][n - 1] >= -0.000000001) dY[i][n] = 0;
                 }
             }
 
-            if (n == 5) return dY;
-            if (Math.Abs(dY[8][n] - dY[9][n]) > 0.05) dY = NewtonPolynomial(dY, n + 1);
+            if (n == 7) return dY;
+            if (Math.Abs(dY[8][n] - dY[9][n]) > 0.001) dY = NewtonPolynomial(dY, n + 1);
 
             return dY;
         }
 
-        private void GaussMethod(double[] a, double b)
+        private double[] GaussMethod(double[][] a, double[] b)
         {
-            
+            double dAd;
+            double[] r = new double[b.Length];
+            for (int k = 0; k < a.Length; k++)
+            {
+                for (int i = 1+k; i < a.Length; i++)
+                {
+                    dAd = -a[i][k]/a[k][k];
+                    
+                    for (int j = 0; j < a[0].Length; j++)
+                    {
+                        a[i][j] = a[i][j] + a[k][j] * dAd;
+                        
+                    }
+                    b[i] += b[k]*dAd; 
+                }
+            }
+
+            for (int i = b.Length-1; i >=0 ; i--)
+            {
+                double lS = b[i];
+                for (int j = b.Length-1; j > i; j--)
+                {
+                    lS -= a[i][j] * r[j];
+                }
+                r[i] = lS / a[i][i];
+            }
+
+            return r;
         }
 
-        private void QuadsMethod(int d)
+        private double[] QuadsMethod(int d)
         {
 
             double[][] sX = new double[d+1][];
@@ -262,9 +291,47 @@ namespace CompMath
                 }
             }
             
-            // TODO: GaussMethod for matrix
+            return GaussMethod(sX,sY);
+        }
+        
+        private double QuadsFunc(double[] r,double x)
+        {
+            double q=0;
 
-            return;
+            for (int i = r.Length-1; i >=0 ; i--)
+            {
+                q += r[i] * Math.Pow(x, i);
+            }
+            return q; 
+        }
+
+        private void QuadsMethod_mod2(double[] r)
+        {
+            _xMass = new double[_n+1];
+            _yMass = new double[_n+1];
+
+            _xMass[0] = 0;
+            _yMass[0] = QuadsFunc(r,0);
+            
+            for (int i = 1; i < _n+1; i++)
+            {
+                _xMass[i] = _xMass[i - 1] + _h;
+                _yMass[i] = QuadsFunc(r,_xMass[i]);
+            }
+
+        }
+        
+        private string _FuncToString(double[] r)
+        {
+            char[] cl = new char[10]{'⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹'};
+            string s="P(x) = ";
+            for (int i = r.Length-1; i >= 0; i--)
+            {
+                if (i < r.Length - 1 && r[i] > 0) s += "+";
+                s += Math.Round(r[i],4).ToString() + " x" + cl[i] +' ';
+                if (i == (r.Length - 1) / 2) s += "\n";
+            }
+            return s;
         }
 
         private void Table_OnLoaded(object sender, RoutedEventArgs e)
@@ -279,9 +346,7 @@ namespace CompMath
 
         private void ButtonRungeKutt_OnClick(object sender, RoutedEventArgs e)
         {
-            //CartesianChart1.ClearValue();
             RungeKuttMethod();
-            
         }
 
         private void ButtonNewtonPolynomial_OnClick(object sender, RoutedEventArgs e)
@@ -334,7 +399,75 @@ namespace CompMath
 
         private void Quads_OnClick(object sender, RoutedEventArgs e)
         {
-            QuadsMethod(XYdYlist[1].dY.Length);
+            
+            _r = QuadsMethod(XYdYlist[1].dY.Length);
+            QuadsMethod_mod2(_r);
+
+            QuadFunc.Content = _FuncToString(_r);
+            
+            var obsPlist = new List<ObservablePoint>();
+            for(int i =0; i<_n; i++)
+            {
+                obsPlist.Add(new ObservablePoint(_xMass[i],_yMass[i]));
+            }
+            if (SeriesCollection.FirstOrDefault((item)=> item.Title=="P(x)")!=null) 
+            {
+                SeriesCollection.FirstOrDefault((item)=> item.Title=="P(x)").Values =
+                    new ChartValues<ObservablePoint>(obsPlist);
+            }
+            else
+            {
+                SeriesCollection.Add(new LineSeries()
+                {
+                    Title = "P(x)",
+                    Values = new ChartValues<ObservablePoint>(obsPlist),
+                    Fill = Brushes.Transparent
+                });
+            }
+        }
+
+
+        private void Squares_OnClick(object sender, RoutedEventArgs e)
+        {
+            double[] fr= new double[_r.Length];
+            double[] fx = new double[_xMass.Length];
+            double[] fy = new double[_yMass.Length];
+
+            _r.CopyTo(fr,0);
+            fr[0] -= 13;
+            fr[1] -= 1.5;
+            
+            _xMass.CopyTo(fx,0);
+            _yMass.CopyTo(fy,0);
+            
+            QuadsMethod_mod2(fr);
+            
+            PxFunc.Content = _FuncToString(fr);
+            
+            var obsPlist = new List<ObservablePoint>();
+            for(int i =0; i<_n; i++)
+            {
+                obsPlist.Add(new ObservablePoint(_xMass[i],_yMass[i]));
+            }
+
+            _xMass = fx;
+            _yMass = fy;
+
+            if (SeriesCollection.FirstOrDefault((item)=> item.Title=="P(x)=f(x)")!=null) 
+            {
+                SeriesCollection.FirstOrDefault((item)=> item.Title=="P(x)=f(x)").Values =
+                    new ChartValues<ObservablePoint>(obsPlist);
+                
+            }
+            else
+            {
+                SeriesCollection.Add(new LineSeries()
+                {
+                    Title = "P(x)=f(x)",
+                    Values = new ChartValues<ObservablePoint>(obsPlist),
+                    Fill = Brushes.Transparent
+                });
+            }
         }
     }
 
@@ -359,6 +492,12 @@ namespace CompMath
             this.dY  = dy;
             switch (dY.Length)
             {
+                case 8:
+                    this.dY7 = Math.Round(dY[7],4);
+                    goto case 7;
+                case 7:
+                    this.dY6 = Math.Round(dY[6],4);
+                    goto case 6;
                 case 6:
                     this.dY5 = Math.Round(dY[5],4);
                     goto case 5;
@@ -386,6 +525,8 @@ namespace CompMath
         public double dY3{ get; set;}
         public double dY4{ get; set;}
         public double dY5{ get; set;}
+        public double dY6{ get; set;}
+        public double dY7{ get; set;}
 
 
     }
