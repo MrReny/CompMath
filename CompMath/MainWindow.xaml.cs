@@ -34,6 +34,8 @@ namespace CompMath
     
         private double[] _yMass { get; set; }
         
+        private double[] _r;
+        
         public Func<double, string> XFormatter { get; set; }
         
         public SeriesCollection SeriesCollection { get; set; }
@@ -55,8 +57,6 @@ namespace CompMath
             }
         }
 
-        public double[] _r;
-
         public List<XYtable> XYlist;
         public List<XYdYtable> XYdYlist;
         
@@ -67,8 +67,8 @@ namespace CompMath
 
         private double _Function(double x)
         {
-            double Fx = 25 * Math.Cos(7.5 * x) / (x + 2);
-            return Fx;
+            double fx = 25 * Math.Cos(7.5 * x) / (x + 2);
+            return fx;
         }
 
         // Euler
@@ -329,7 +329,7 @@ namespace CompMath
             {
                 if (i < r.Length - 1 && r[i] > 0) s += "+";
                 s += Math.Round(r[i],4).ToString() + " x" + cl[i] +' ';
-                if (i == (r.Length - 1) / 2) s += "\n";
+                if (i == r.Length / 2) s += "\n";
             }
             return s;
         }
@@ -399,7 +399,7 @@ namespace CompMath
 
         private void Quads_OnClick(object sender, RoutedEventArgs e)
         {
-            
+            if (XYdYlist == null) return;
             _r = QuadsMethod(XYdYlist[1].dY.Length);
             QuadsMethod_mod2(_r);
 
@@ -426,9 +426,9 @@ namespace CompMath
             }
         }
 
-
         private void Squares_OnClick(object sender, RoutedEventArgs e)
         {
+            if(_r==null) return;
             double[] fr= new double[_r.Length];
             double[] fx = new double[_xMass.Length];
             double[] fy = new double[_yMass.Length];
@@ -466,6 +466,14 @@ namespace CompMath
                     Title = "P(x)=f(x)",
                     Values = new ChartValues<ObservablePoint>(obsPlist),
                     Fill = Brushes.Transparent
+                });
+                SeriesCollection.Add(new LineSeries()
+                {
+                    Title = "y=0",
+                    Values = new ChartValues<ObservablePoint>(new ObservablePoint[]
+                    {
+                        new ObservablePoint(0,0), new ObservablePoint(2,0),
+                    })
                 });
             }
         }
