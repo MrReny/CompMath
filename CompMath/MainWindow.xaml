@@ -33,14 +33,46 @@
             </lvc:CartesianChart.AxisX>
         </lvc:CartesianChart>
         
-        <DataGrid Name="Table" Grid.Row="0" Grid.Column="1"
-                  DataContext="{Binding}" Loaded="Table_OnLoaded" AutoGeneratingColumn="Table_OnAutoGeneratingColumn" >
-            <DataGrid.Columns>
-                <DataGridTextColumn Header="I" Binding="{Binding I}"></DataGridTextColumn>
-                <DataGridTextColumn Header="X" Binding="{Binding X}"></DataGridTextColumn>
-                <DataGridTextColumn Header="Y" Binding="{Binding Y}"></DataGridTextColumn>
-            </DataGrid.Columns>
-        </DataGrid>
+        <TabControl Grid.Row="0" Grid.Column="1">
+        
+            <TabItem Header="y'">
+                
+                <DataGrid Name="Table" 
+                               DataContext="{Binding}" Loaded="Table_OnLoaded" AutoGeneratingColumn="Table_OnAutoGeneratingColumn" >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="I" Binding="{Binding I}"></DataGridTextColumn>
+                        <DataGridTextColumn Header="X" Binding="{Binding X}"></DataGridTextColumn>
+                        <DataGridTextColumn Header="Y" Binding="{Binding Y}"></DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+                
+            </TabItem>
+            
+            <TabItem Header="P(x)">
+                <DataGrid Name="Table1" 
+                          DataContext="{Binding}" Loaded="Table_OnLoaded" AutoGeneratingColumn="Table_OnAutoGeneratingColumn" >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="I" Binding="{Binding I}"></DataGridTextColumn>
+                        <DataGridTextColumn Header="X" Binding="{Binding X}"></DataGridTextColumn>
+                        <DataGridTextColumn Header="Y" Binding="{Binding Y}"></DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid> 
+            </TabItem>
+            
+            <TabItem Header="P(x)=f(x)">
+                <DataGrid Name="Table2" 
+                          DataContext="{Binding}" Loaded="Table_OnLoaded" AutoGeneratingColumn="Table_OnAutoGeneratingColumn" >
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="I" Binding="{Binding I}"></DataGridTextColumn>
+                        <DataGridTextColumn Header="X" Binding="{Binding X}"></DataGridTextColumn>
+                        <DataGridTextColumn Header="Y" Binding="{Binding Y}"></DataGridTextColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+            
+            
+        </TabControl>
+        
         
         <Grid Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Name="ButtonGrid">
             
@@ -51,27 +83,37 @@
                 <RowDefinition Height="1*"/>
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
                 <ColumnDefinition Width="1*"/>
                 <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="1*"/>
+                <ColumnDefinition Width="0.5*"/>
+                <ColumnDefinition Width="0.5*"/>
             </Grid.ColumnDefinitions>  
             
             <Button Name="ButtonEuler" Content="Euler" Click="ButtonEuler_OnClick"/>
-            <Button Name="ButtonRungeKutt" Grid.Row="1" Grid.Column="0"
+            <Button Name="ButtonRungeKutt" Grid.Row="0" Grid.Column="1"
                     Content="RungeKutt" Click="ButtonRungeKutt_OnClick"/>
-            <Button Name="ButtonNewtonPolynomial" Grid.Row="2" Grid.Column="0"
+            <Button Name="ButtonNewtonPolynomial" Grid.Row="0" Grid.Column="2"
                     Content="NewtonPolynomial" Click="ButtonNewtonPolynomial_OnClick"/>
-            <Label Name="PxFunc" Grid.Row="3" Grid.Column="0" Content="P(x) = f(x) " />
             
-            <TextBox Name="HBox" Grid.Row="0" Grid.Column="1" PreviewTextInput="HBox_OnPreviewTextInput" Text="0.05"></TextBox>
-            <Button Name="ButtonOk" Grid.Row="0" Grid.Column="2"
+            
+            <TextBox Name="HBox" Grid.Row="0" Grid.Column="3" PreviewTextInput="HBox_OnPreviewTextInput" Text="0.05"></TextBox>
+            <Button Name="ButtonOk" Grid.Row="0" Grid.Column="4"
                     Content="OK" Click="ButtonOk_OnClick"/>
             
-            <Label Name="QuadFunc" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Content="P(x) = " />
-            <Button Name="Quads" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2"
-                    Content="OK" Click="Quads_OnClick"/>
-            <Button Name="Squares" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2"
-                    Content="OK" Click="Squares_OnClick"/>
+            <Label Name="QuadFunc" Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="3" Content="P(x) = "
+                   BorderBrush="Black" BorderThickness="3" Margin="1"/>
+            <Button Name="Quads" Grid.Row="1" Grid.Column="3" Grid.ColumnSpan="2"
+                    Content="QuadsFunction" Click="Quads_OnClick"/>
+            
+            <Label Name="PxFunc" Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3" Content="P(x) = f(x) "
+                   BorderBrush="Black" BorderThickness="3" Margin="1"/>
+            <Button Name="Squares" Grid.Row="2" Grid.Column="3" Grid.ColumnSpan="2"
+                    Content="P(x)-f(x) = 0" Click="Squares_OnClick"/>
+            
+            <Label Name="Xlabel" Grid.Row="3" Grid.Column="0" Grid.ColumnSpan="5" Content="x1 = "
+                   BorderBrush="Black" BorderThickness="3" Margin="1"/>
+            
             
         </Grid>
         

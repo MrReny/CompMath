@@ -33,6 +33,9 @@ namespace CompMath
         private double[] _xMass { get; set; }
     
         private double[] _yMass { get; set; }
+
+        private double[] _bvxMass;
+        private double[] _bvyMass;
         
         private double[] _r;
         
@@ -74,8 +77,8 @@ namespace CompMath
         // Euler
         private void EulerMethod()
         {
-            _xMass = new double[_n+1];
-            _yMass = new double[_n+1];
+            _xMass = new double[_n];
+            _yMass = new double[_n];
 
             _xMass[0] = 0;
             _yMass[0] = _y0;
@@ -83,7 +86,7 @@ namespace CompMath
             XYlist = new List<XYtable>(_n);
             XYlist.Add(new XYtable(_xMass[0],_yMass[0],0));
             
-            for (int i = 1; i < _n+1; i++)
+            for (int i = 1; i < _n; i++)
             {
                 _yMass[i] = _yMass[i - 1] + _h * _Function(_xMass[i - 1]);
                 _xMass[i] = _xMass[i - 1] + _h;
@@ -126,8 +129,8 @@ namespace CompMath
         
         private void RungeKuttMethod()
         {
-            _xMass = new double[_n+1];
-            _yMass = new double[_n+1];
+            _xMass = new double[_n];
+            _yMass = new double[_n];
 
             _xMass[0] = 0;
             _yMass[0] = _y0;
@@ -142,7 +145,7 @@ namespace CompMath
             double K3 = 0;
             double K4 = 0;
             
-            for (int i = 1; i < _n+1; i++)
+            for (int i = 1; i < _n; i++)
             {
                 K1 = _Function(_xMass[i - 1]);
                 K2 = _Function(_xMass[i - 1] + _h / 2);
@@ -181,8 +184,6 @@ namespace CompMath
             CartesianChart1.Series = SeriesCollection;
             
             XFormatter = value => value.ToString("C");
-
-            var f = XFormatter;
             
             DataContext = this; // very important
         }
@@ -194,7 +195,7 @@ namespace CompMath
             
             if (dy == null)
             {
-                dy = new double[_n+1][];
+                dy = new double[_n][];
                 i = 0;
                 foreach (var y in _yMass)
                 {
@@ -205,7 +206,7 @@ namespace CompMath
                 {
                     dY[i] = new double[n+1];
                 }
-                for (i = 0; i < _n ; i++)
+                for (i = 0; i < _n-1 ; i++)
                 {
                     dY[i][n] = Math.Abs(dy[i + 1][n] - dy[i][n]);
                 }
@@ -305,26 +306,38 @@ namespace CompMath
             return q; 
         }
 
-        private void QuadsMethod_mod2(double[] r)
+        private void RecalculateWithQuadsMethod(double[] r)
         {
-            _xMass = new double[_n+1];
-            _yMass = new double[_n+1];
+            _xMass = new double[_n];
+            _yMass = new double[_n];
+            
+            XYlist = new List<XYtable>(_n);
 
             _xMass[0] = 0;
             _yMass[0] = QuadsFunc(r,0);
             
-            for (int i = 1; i < _n+1; i++)
+            XYlist.Add(new XYtable(_xMass[0],_yMass[0],0));
+            
+            for (int i = 1; i < _n; i++)
             {
                 _xMass[i] = _xMass[i - 1] + _h;
                 _yMass[i] = QuadsFunc(r,_xMass[i]);
+                XYlist.Add(new XYtable(_xMass[i],_yMass[i],i));
             }
 
         }
         
-        private string _FuncToString(double[] r)
+        private string _FuncToString(double[] r, object sender=null)
         {
             char[] cl = new char[10]{'⁰','¹','²','³','⁴','⁵','⁶','⁷','⁸','⁹'};
-            string s="P(x) = ";
+            string s = "";
+            if (sender != null)
+            {
+                var sr = (Button) sender;
+                s=sr.Content.ToString().Trim('0'); 
+            }
+
+            else s = "P(x) = ";
             for (int i = r.Length-1; i >= 0; i--)
             {
                 if (i < r.Length - 1 && r[i] > 0) s += "+";
@@ -334,8 +347,61 @@ namespace CompMath
             return s;
         }
 
+        private double[] BirgeVietaMethod(double[] r)
+        {
+            double[] b = new double[r.Length];
+            double[] c = new double[r.Length];
+            
+            List<double[]> xx = new List<double[]>(); 
+
+            for (int i = 1; i < _n; i++)
+            {
+                if (_bvyMass[i - 1] > 0 && _bvyMass[i] < 0 || _bvyMass[i - 1] < 0 && _bvyMass[i] > 0)
+                {
+                    xx.Add(new double[]{_bvxMass[i-1], _bvxMass[i]});
+                }
+            }
+
+            double[] x = new double[xx.Count];
+            
+            for(int i = 0; i<xx.Count;i++)
+            {
+                x[i] = (xx[i][0] + xx[i][1]) / 2;
+            }
+
+            for(int k=0;k<x.Length;k++)
+            {
+                
+                for (int j = 0; j < r.Length; j++)
+                {
+                    
+                
+                b[r.Length-1] = r[r.Length-1];
+                c[r.Length-1] = r[r.Length-1];
+                for (int i = r.Length - 2; i >= 0; i--)
+                {
+                    b[i] = r[i] + x[k] * b[i + 1];
+                    c[i] = b[i] + x[k] * c[i + 1];
+                }
+
+                x[k] = x[k] - (b[0] / c[1]);
+                }
+            }
+
+            foreach (var xn in x)
+            {
+                if (0.0002 > QuadsFunc(r, xn) && QuadsFunc(r, xn) > -0.0001)
+                {
+                }
+                else return null;
+            }
+            
+            return  x;
+        }
+
         private void Table_OnLoaded(object sender, RoutedEventArgs e)
         {
+            if(SeriesCollection!=null) return;
             EulerMethod();
         }
 
@@ -401,9 +467,13 @@ namespace CompMath
         {
             if (XYdYlist == null) return;
             _r = QuadsMethod(XYdYlist[1].dY.Length);
-            QuadsMethod_mod2(_r);
+            
+            RecalculateWithQuadsMethod(_r);
+
+            Table1.ItemsSource = XYlist;
 
             QuadFunc.Content = _FuncToString(_r);
+            
             
             var obsPlist = new List<ObservablePoint>();
             for(int i =0; i<_n; i++)
@@ -424,6 +494,7 @@ namespace CompMath
                     Fill = Brushes.Transparent
                 });
             }
+            
         }
 
         private void Squares_OnClick(object sender, RoutedEventArgs e)
@@ -440,16 +511,24 @@ namespace CompMath
             _xMass.CopyTo(fx,0);
             _yMass.CopyTo(fy,0);
             
-            QuadsMethod_mod2(fr);
+            RecalculateWithQuadsMethod(fr);
             
-            PxFunc.Content = _FuncToString(fr);
+            Table2.ItemsSource = XYlist;
+            
+            PxFunc.Content = _FuncToString(fr,sender);
             
             var obsPlist = new List<ObservablePoint>();
             for(int i =0; i<_n; i++)
             {
                 obsPlist.Add(new ObservablePoint(_xMass[i],_yMass[i]));
             }
-
+            
+            _bvxMass = new double[_n];
+            _bvyMass = new double[_n];
+            
+            _xMass.CopyTo(_bvxMass,0);
+            _yMass.CopyTo(_bvyMass,0);
+            
             _xMass = fx;
             _yMass = fy;
 
@@ -476,6 +555,26 @@ namespace CompMath
                     })
                 });
             }
+
+            var y0x = BirgeVietaMethod(fr);
+
+            if (y0x != null)
+            {
+                string xstring = "";
+
+                for (int i = 0; i < y0x.Length; i++)
+                {
+                    xstring += "x" + i + " = " + Math.Round(y0x[i], 6) + ";  ";
+                    xstring += "y" + "(x" + i + ") = " + Math.Round(QuadsFunc(fr, y0x[i]), 13) + ";  ";
+                    
+                    if (i == (y0x.Length-1) / 2) xstring += "\n";
+                }
+
+                Xlabel.Content = xstring;
+            }
+
+            else Xlabel.Content = "Something gone wrong";
+
         }
     }
 
@@ -498,7 +597,8 @@ namespace CompMath
         public XYdYtable(double x, double y, int i, double[] dy) : base(x, y, i)
         {
             this.dY  = dy;
-            switch (dY.Length)
+            var l = dY.Length > 8 ? 8 : dY.Length;
+            switch (l)
             {
                 case 8:
                     this.dY7 = Math.Round(dY[7],4);
