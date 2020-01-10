@@ -188,7 +188,7 @@ namespace CompMath
             DataContext = this; // very important
         }
         
-        private double[][] NewtonPolynomial(double[][] dy=null, int n=0)
+        private double[][] MakeDifferenceTable(double[][] dy=null, int n=0)
         {
             double[][] dY = new double[_n][];
             int i = 0;
@@ -229,7 +229,7 @@ namespace CompMath
             }
 
             if (n == 7) return dY;
-            if (Math.Abs(dY[8][n] - dY[9][n]) > 0.001) dY = NewtonPolynomial(dY, n + 1);
+            if (Math.Abs(dY[8][n] - dY[9][n]) > 0.001) dY = MakeDifferenceTable(dY, n + 1);
 
             return dY;
         }
@@ -415,12 +415,12 @@ namespace CompMath
             RungeKuttMethod();
         }
 
-        private void ButtonNewtonPolynomial_OnClick(object sender, RoutedEventArgs e)
+        private void ButtonDifferenceTable_OnClick(object sender, RoutedEventArgs e)
         {
             double[][] dY;
             XYdYlist = new List<XYdYtable>(_n+1);
             
-            dY = NewtonPolynomial();
+            dY = MakeDifferenceTable();
 
             for (int i = 0; i < _n;i++)
             {

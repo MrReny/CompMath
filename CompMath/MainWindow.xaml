@@ -92,9 +92,9 @@
             
             <Button Name="ButtonEuler" Content="Euler" Click="ButtonEuler_OnClick"/>
             <Button Name="ButtonRungeKutt" Grid.Row="0" Grid.Column="1"
-                    Content="RungeKutt" Click="ButtonRungeKutt_OnClick"/>
-            <Button Name="ButtonNewtonPolynomial" Grid.Row="0" Grid.Column="2"
-                    Content="NewtonPolynomial" Click="ButtonNewtonPolynomial_OnClick"/>
+                    Content="Runge-Kutt" Click="ButtonRungeKutt_OnClick"/>
+            <Button Name="ButtonDifferenceTable" Grid.Row="0" Grid.Column="2"
+                    Content="DifferenceTable" Click="ButtonDifferenceTable_OnClick"/>
             
             
             <TextBox Name="HBox" Grid.Row="0" Grid.Column="3" PreviewTextInput="HBox_OnPreviewTextInput" Text="0.05"></TextBox>
